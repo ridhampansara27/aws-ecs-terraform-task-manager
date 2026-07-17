@@ -9,6 +9,7 @@ from sqlalchemy import text
 from app import models
 from app.config import get_settings
 from app.database import Base, SessionLocal, engine
+from app.routes import router as task_router
 
 
 settings = get_settings()
@@ -27,9 +28,11 @@ async def lifespan(application: FastAPI) -> AsyncGenerator[None, None]:
 
 app = FastAPI(
     title=settings.app_name,
-    version="0.1.0",
+    version="0.2.0",
     lifespan=lifespan,
 )
+
+app.include_router(task_router)
 
 
 @app.get("/")
