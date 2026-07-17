@@ -6,7 +6,7 @@ from collections.abc import AsyncGenerator
 from fastapi import FastAPI
 from sqlalchemy import text
 
-from app import models
+
 from app.config import get_settings
 from app.database import SessionLocal
 from app.routes import router as task_router
