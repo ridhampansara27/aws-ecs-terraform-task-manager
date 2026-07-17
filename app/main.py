@@ -8,7 +8,7 @@ from sqlalchemy import text
 
 from app import models
 from app.config import get_settings
-from app.database import Base, SessionLocal, engine
+from app.database import SessionLocal
 from app.routes import router as task_router
 
 
@@ -17,11 +17,9 @@ settings = get_settings()
 
 @asynccontextmanager
 async def lifespan(application: FastAPI) -> AsyncGenerator[None, None]:
-    """Initialize database tables when the application starts."""
+    """Manage application startup and shutdown resources."""
 
     del application
-
-    Base.metadata.create_all(bind=engine)
 
     yield
 

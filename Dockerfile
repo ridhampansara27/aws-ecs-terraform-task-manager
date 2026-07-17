@@ -24,6 +24,10 @@ RUN pip install --no-cache-dir --upgrade pip \
 # Copy the FastAPI source code.
 COPY app ./app
 
+# Copy Alembic migration configuration.
+COPY alembic.ini .
+COPY migrations ./migrations
+
 # Give the application user ownership of the project files.
 RUN chown -R appuser:appgroup /app
 
