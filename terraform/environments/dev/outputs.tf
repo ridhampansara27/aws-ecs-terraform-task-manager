@@ -1,3 +1,4 @@
+# Outputs for the ECR repository
 output "ecr_repository_name" {
   description = "Name of the ECR repository."
   value       = aws_ecr_repository.app.name
@@ -24,4 +25,37 @@ output "public_subnet_ids" {
 output "private_db_subnet_ids" {
   description = "IDs of private database subnets."
   value       = module.networking.private_db_subnet_ids
+}
+
+
+
+
+# Outputs for the security module
+output "alb_security_group_id" {
+  description = "Security group ID for ALB."
+  value       = module.security.alb_security_group_id
+}
+
+output "ecs_security_group_id" {
+  description = "Security group ID for ECS."
+  value       = module.security.ecs_security_group_id
+}
+
+output "rds_security_group_id" {
+  description = "Security group ID for RDS."
+  value       = module.security.rds_security_group_id
+}
+
+
+
+
+# Outputs for the database module
+output "database_endpoint" {
+  description = "RDS PostgreSQL endpoint."
+  value       = module.database.database_endpoint
+}
+
+output "database_secret_arn" {
+  description = "ARN of the database secret."
+  value       = module.database.database_secret_arn
 }
