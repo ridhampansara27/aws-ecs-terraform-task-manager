@@ -47,6 +47,8 @@ resource "aws_secretsmanager_secret_version" "database" {
     database = var.database_name
     host     = aws_db_instance.postgres.address
     port     = aws_db_instance.postgres.port
+
+    database_url = "postgresql+psycopg://${var.database_username}:${urlencode(random_password.database.result)}@${aws_db_instance.postgres.address}:${aws_db_instance.postgres.port}/${var.database_name}"
   })
 }
 

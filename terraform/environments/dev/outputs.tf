@@ -59,3 +59,31 @@ output "database_secret_arn" {
   description = "ARN of the database secret."
   value       = module.database.database_secret_arn
 }
+
+
+
+
+# Outputs for the load balancer module
+output "alb_dns_name" {
+  description = "Public DNS name of the Application Load Balancer."
+  value       = module.load_balancer.alb_dns_name
+}
+
+
+
+
+# Outputs for the ECS module
+output "ecs_cluster_name" {
+  description = "ECS cluster name."
+  value       = module.ecs.cluster_name
+}
+
+output "ecs_service_name" {
+  description = "ECS service name."
+  value       = module.ecs.service_name
+}
+
+output "cloudwatch_log_group_name" {
+  description = "Application CloudWatch log group."
+  value       = module.ecs.cloudwatch_log_group_name
+}
