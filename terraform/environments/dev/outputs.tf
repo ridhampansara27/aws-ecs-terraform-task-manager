@@ -87,3 +87,12 @@ output "cloudwatch_log_group_name" {
   description = "Application CloudWatch log group."
   value       = module.ecs.cloudwatch_log_group_name
 }
+
+
+
+
+# Output the GitHub deployment role ARN
+output "github_deploy_role_arn" {
+  description = "IAM role assumed by GitHub Actions through OIDC."
+  value       = aws_iam_role.github_deploy.arn
+}

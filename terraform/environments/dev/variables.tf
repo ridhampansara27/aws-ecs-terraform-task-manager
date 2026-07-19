@@ -54,3 +54,10 @@ variable "private_db_subnet_cidrs" {
     "10.0.22.0/24"
   ]
 }
+
+
+variable "github_repository" {
+  description = "GitHub repository allowed to deploy to AWS."
+  type        = string
+  default     = "ridhampansara27/aws-ecs-terraform-task-manager"
+}

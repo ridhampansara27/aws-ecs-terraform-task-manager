@@ -16,7 +16,7 @@ settings = get_settings()
 # Use the same environment-based database URL as the application.
 config.set_main_option(
     "sqlalchemy.url",
-    settings.database_url,
+    settings.database_url.replace("%", "%%"),
 )
 
 # Configure Alembic logging from alembic.ini.
