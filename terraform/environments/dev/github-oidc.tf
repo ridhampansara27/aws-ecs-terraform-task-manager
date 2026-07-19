@@ -8,9 +8,7 @@ resource "aws_iam_openid_connect_provider" "github" {
 }
 
 
-
-
-# Create an IAM role for GitHub Actions to assume
+# Create an IAM role trust policy for GitHub Actions
 data "aws_iam_policy_document" "github_actions_assume_role" {
   statement {
     effect = "Allow"
@@ -27,6 +25,7 @@ data "aws_iam_policy_document" "github_actions_assume_role" {
       "sts:AssumeRoleWithWebIdentity"
     ]
 
+    # GitHub OIDC audience must be AWS STS
     condition {
       test     = "StringEquals"
       variable = "token.actions.githubusercontent.com:aud"
@@ -36,18 +35,18 @@ data "aws_iam_policy_document" "github_actions_assume_role" {
       ]
     }
 
+    # Restrict access to this exact GitHub repository and main branch.
+    # Uses GitHub's immutable OIDC subject format.
     condition {
-      test     = "StringLike"
+      test     = "StringEquals"
       variable = "token.actions.githubusercontent.com:sub"
 
       values = [
-        "repo:${var.github_repository}:*"
+        "repo:${var.github_owner}@${var.github_owner_id}/${var.github_repository_name}@${var.github_repository_id}:ref:refs/heads/main"
       ]
     }
   }
 }
-
-
 
 
 # Create GitHub deployment role for GitHub Actions to assume
@@ -58,10 +57,10 @@ resource "aws_iam_role" "github_deploy" {
 }
 
 
-
-
-# Attach the GitHub deployment policy to the GitHub deployment role
+# Create permissions policy for GitHub deployment
 data "aws_iam_policy_document" "github_deploy" {
+
+  # Allow GitHub Actions to authenticate with ECR
   statement {
     effect = "Allow"
 
@@ -72,6 +71,7 @@ data "aws_iam_policy_document" "github_deploy" {
     resources = ["*"]
   }
 
+  # Allow pushing and reading Docker images from this ECR repository
   statement {
     effect = "Allow"
 
@@ -90,6 +90,7 @@ data "aws_iam_policy_document" "github_deploy" {
     ]
   }
 
+  # Allow GitHub Actions to deploy new ECS task definition revisions
   statement {
     effect = "Allow"
 
@@ -103,6 +104,8 @@ data "aws_iam_policy_document" "github_deploy" {
     resources = ["*"]
   }
 
+  # Allow GitHub Actions to pass the existing ECS IAM roles
+  # when registering a new ECS task definition
   statement {
     effect = "Allow"
 
@@ -118,7 +121,7 @@ data "aws_iam_policy_document" "github_deploy" {
 }
 
 
-# Create an IAM role policy for the GitHub deployment role
+# Attach the deployment permissions policy to the GitHub deployment role
 resource "aws_iam_role_policy" "github_deploy" {
   name = "${var.project_name}-${var.environment}-github-deploy-policy"
 

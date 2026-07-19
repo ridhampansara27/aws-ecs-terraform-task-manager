@@ -61,3 +61,27 @@ variable "github_repository" {
   type        = string
   default     = "ridhampansara27/aws-ecs-terraform-task-manager"
 }
+
+variable "github_owner" {
+  description = "GitHub repository owner."
+  type        = string
+  default     = "ridhampansara27"
+}
+
+variable "github_owner_id" {
+  description = "Immutable GitHub owner ID used in the OIDC subject."
+  type        = string
+  default     = "70193760"
+}
+
+variable "github_repository_name" {
+  description = "GitHub repository name."
+  type        = string
+  default     = "aws-ecs-terraform-task-manager"
+}
+
+variable "github_repository_id" {
+  description = "Immutable GitHub repository ID used in the OIDC subject."
+  type        = string
+  default     = "1304106902"
+}
