@@ -183,6 +183,17 @@ resource "aws_ecs_service" "app" {
 
   launch_type = "FARGATE"
 
+  deployment_circuit_breaker {
+    enable   = true
+    rollback = true
+  }
+
+  lifecycle {
+    ignore_changes = [
+        task_definition
+    ]
+  }
+
   network_configuration {
     subnets = var.public_subnet_ids
 
@@ -210,4 +221,7 @@ resource "aws_ecs_service" "app" {
   tags = {
     Name = "${var.project_name}-${var.environment}-service"
   }
+
+
+
 }
