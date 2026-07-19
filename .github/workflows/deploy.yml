@@ -22,11 +22,6 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
-      - name: Debug GitHub OIDC claims
-        uses: github/actions-oidc-debugger@main
-        with:
-          audience: sts.amazonaws.com
-
       - name: Show GitHub repository context
         run: |
           echo "Repository: $GITHUB_REPOSITORY"
