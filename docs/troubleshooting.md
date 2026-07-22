@@ -143,3 +143,16 @@ Then test:
 ```powershell
 curl.exe --fail https://api.ridham-pansara-portfolio.online/health
 ```
+
+## Deployment Fails After a Destructive Database Migration
+
+The deployment workflow runs Alembic before updating the ECS service. During the rolling deployment, the previous application revision may still be serving traffic.
+
+Use backward-compatible migrations:
+
+1. Add new columns or tables without removing existing structures.
+2. Deploy application code that supports both the old and new schema.
+3. Migrate or backfill data.
+4. Remove deprecated structures in a later deployment.
+
+Avoid renaming or dropping columns in the same release that first stops using them.

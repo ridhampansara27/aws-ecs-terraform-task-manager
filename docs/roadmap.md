@@ -21,6 +21,7 @@ This roadmap records planned improvements separately from features that are alre
 - Add Dependabot for Python, Docker, Terraform, and GitHub Actions.
 - Add secret scanning and CodeQL.
 - Pin GitHub Actions to immutable commit SHAs.
+- Further scope ECS deployment permissions where AWS APIs support resource-level restrictions.
 
 ## Reliability
 

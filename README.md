@@ -14,7 +14,7 @@ A production-inspired task management REST API that demonstrates an end-to-end c
 > [!IMPORTANT]
 > This is a cost-controlled development environment. ECS and RDS may be paused when the project is not being demonstrated. The screenshots and deployment workflows provide evidence of the running environment when the live API is offline.
 
-## Live Demo
+## Deployed API
 
 | Resource | URL |
 |---|---|
@@ -24,7 +24,7 @@ A production-inspired task management REST API that demonstrates an end-to-end c
 | Health check | <https://api.ridham-pansara-portfolio.online/health> |
 | Readiness check | <https://api.ridham-pansara-portfolio.online/ready> |
 
-**Demo availability:** On demand because the AWS environment is paused to control costs.
+> **Live environment:** The AWS runtime is normally scaled to zero to control personal cloud costs. The API can be started on demand; the evidence section below documents the deployed and operational environment.
 
 ## Skills Demonstrated
 
@@ -34,7 +34,7 @@ A production-inspired task management REST API that demonstrates an end-to-end c
 | Infrastructure as Code | Reusable Terraform modules with encrypted S3 remote state |
 | CI/CD | GitHub Actions, AWS OIDC, immutable image tags, migrations, smoke tests |
 | Containers | Docker, Docker Compose, health checks, non-root runtime |
-| Cloud security | Private RDS, security-group isolation, HTTPS, least-privilege IAM |
+| Cloud security | Private RDS, security-group isolation, HTTPS, scoped IAM roles, and repository-restricted OIDC |
 | Database operations | PostgreSQL, SQLAlchemy, versioned Alembic migrations |
 | Reliability | Health/readiness checks, deployment circuit breaker, rollback procedures |
 | Cost optimization | No NAT Gateway, one ECS task, scale-to-zero, stoppable RDS |
@@ -60,7 +60,7 @@ My work included:
 - Connected ECS to a non-public Amazon RDS PostgreSQL database.
 - Restricted ALB-to-ECS and ECS-to-RDS traffic with security-group references.
 - Replaced persistent AWS credentials in GitHub with short-lived OIDC sessions.
-- Automated an **8-step CI workflow** covering linting, formatting, tests, and image validation.
+- Built a two-job CI workflow that runs Ruff linting, formatting checks, Pytest, Docker image builds, and image validation.
 - Automated image publishing, Alembic migrations, ECS rollout, stability checks, and an HTTPS smoke test.
 - Provisioned networking across **2 Availability Zones**.
 - Configured **4 CloudWatch alarms** for application and load-balancer health.
@@ -143,6 +143,12 @@ flowchart TD
 
 The deployment uses immutable `sha-<commit-sha>` image tags and a concurrency group that prevents overlapping development deployments.
 
+## Infrastructure and Deployment Ownership
+
+Terraform manages the persistent AWS infrastructure and the baseline ECS task definition. GitHub Actions owns application image revisions and ECS service deployments after the initial infrastructure is provisioned.
+
+The ECS service ignores external `task_definition` changes so a later `terraform apply` does not roll the application back to the original bootstrap image. The ECS deployment circuit breaker is enabled to roll back failed service deployments automatically.
+
 ## Security Decisions
 
 Implemented controls include:
@@ -155,6 +161,7 @@ Implemented controls include:
 - GitHub Actions OIDC with repository- and branch-restricted trust.
 - Private, encrypted, versioned Terraform state.
 - Immutable ECR image tags and a non-root application container.
+- DNS is managed through an external domain provider rather than Amazon Route 53. The API subdomain uses a CNAME record that points to the AWS Application Load Balancer.
 
 To avoid NAT Gateway cost, ECS tasks use public subnets with public IP assignment. They are not directly reachable from the internet because their security group only permits inbound traffic from the ALB security group.
 
@@ -162,24 +169,62 @@ Read the complete [security documentation](docs/security.md).
 
 ## Quick Start
 
+### 1. Clone and configure the project
+
 ```powershell
 git clone https://github.com/ridhampansara27/aws-ecs-terraform-task-manager.git
 cd aws-ecs-terraform-task-manager
 Copy-Item .env.example .env
+```
 
+### 2. Create the Python development environment
+
+```powershell
+python -m venv .venv
+.venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
+python -m pip install -r requirements-dev.txt
+```
+
+### 3. Start PostgreSQL and run migrations
+
+```powershell
 docker compose up -d db
 docker compose build api
 docker compose run --rm api python -m alembic upgrade head
 docker compose up -d api
 ```
 
-Open <http://localhost:8000/docs> and run the quality checks with:
+### 4. Open the API
+
+- Swagger UI: <http://localhost:8000/docs>
+- ReDoc: <http://localhost:8000/redoc>
+- Health check: <http://localhost:8000/health>
+- Readiness check: <http://localhost:8000/ready>
+
+### 5. Run quality checks
 
 ```powershell
 python -m ruff check .
 python -m ruff format --check .
 python -m pytest -v
 ```
+
+## API Endpoints
+
+| Method | Endpoint | Purpose |
+|---|---|---|
+| `GET` | `/` | Return application metadata |
+| `GET` | `/health` | Process-level health check |
+| `GET` | `/ready` | Database readiness check |
+| `POST` | `/tasks` | Create a task |
+| `GET` | `/tasks` | List tasks |
+| `GET` | `/tasks/{task_id}` | Retrieve one task |
+| `PUT` | `/tasks/{task_id}` | Update a task |
+| `DELETE` | `/tasks/{task_id}` | Delete a task |
+| `GET` | `/docs` | Swagger/OpenAPI interface |
+| `GET` | `/redoc` | ReDoc API documentation |
+
 
 ## Technology Stack
 
@@ -223,6 +268,28 @@ This is intentionally a cost-controlled development environment:
 - No ECS autoscaling, WAF, or separate production environment.
 - No container/Terraform security scanner or published test-coverage percentage.
 - RDS deletion protection and final snapshot on destroy are disabled.
+- Database migrations run before the ECS rollout and must remain backward-compatible with the currently running application during rolling deployments.
+
+## Cost-Controlled Runtime Operations
+
+Start the development runtime:
+
+```powershell
+.\scripts\start-dev.ps1
+```
+
+The script starts RDS, waits for the database to become available, and scales the ECS service to one task.
+
+Stop ECS compute and RDS when the environment is not needed:
+
+```powershell
+.\scripts\stop-dev.ps1
+```
+
+The scripts do not destroy infrastructure. The ALB, networking, ECR repository, IAM resources, Terraform state, CloudWatch data, and RDS storage remain provisioned.
+
+> [!NOTE]
+> Amazon RDS temporary stops are time-limited. Periodic status checks and AWS budget alerts remain important even when the development environment is normally paused.
 
 ## Roadmap
 
@@ -254,7 +321,6 @@ See the complete [project roadmap](docs/roadmap.md).
 Master's student in Computer Engineering for IoT Systems, focused on cloud infrastructure, DevOps, platform engineering, site reliability engineering, and cloud security.
 
 - Portfolio: <https://www.ridham-pansara-portfolio.online/>
-- GitHub: <https://github.com/ridhampansara27>
 
 ## License
 

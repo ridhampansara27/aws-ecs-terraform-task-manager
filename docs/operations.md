@@ -161,3 +161,6 @@ Stop the runtime:
 The script scales ECS to zero, waits for tasks to stop, and then stops RDS.
 
 These scripts do not destroy infrastructure. The ALB, networking, RDS storage, ECR images, CloudWatch data, and Terraform state remain provisioned.
+
+> [!NOTE]
+> Amazon RDS temporary stops are time-limited and the instance may restart automatically. Keep AWS budget alerts enabled and periodically verify the database status.

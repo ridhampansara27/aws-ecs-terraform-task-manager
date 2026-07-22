@@ -30,7 +30,7 @@ aws sts get-caller-identity
 The bootstrap stack creates the encrypted, versioned S3 bucket used for Terraform state.
 
 ```powershell
-cd terraformootstrap
+cd terraform\bootstrap
 terraform init
 terraform fmt -check
 terraform validate
@@ -134,16 +134,13 @@ This prevents a later `terraform apply` from replacing a newer GitHub Actions de
 
 `.github/workflows/ci.yml` runs on pushes and pull requests targeting `main`.
 
-The workflow:
+It uses two independent jobs:
 
-1. Checks out the repository.
-2. Installs Python 3.12.
-3. Installs development dependencies.
-4. Runs Ruff lint checks.
-5. Verifies Ruff formatting.
-6. Runs Pytest.
-7. Builds the Docker image.
-8. Inspects the built image.
+- **Lint and Test:** checks out the repository, configures Python 3.12, installs development dependencies, runs Ruff linting, verifies Ruff formatting, and runs Pytest.
+- **Build Docker Image:** checks out the repository, configures Docker Buildx, builds the application image, and inspects the resulting image.
+
+Keeping quality validation and container validation in separate jobs makes failures easier to identify and allows the jobs to run independently.
+
 
 ## Continuous Deployment
 
@@ -174,7 +171,7 @@ docker compose run --rm api python -m alembic upgrade head
 
 AWS deployments run the same command in a one-off ECS task before updating the service. Deployment continues only when the migration container exits with code `0`.
 
-Prefer backward-compatible schema changes: add compatible structures first, deploy code that supports both versions, migrate data, and remove deprecated structures later.
+Database migrations run before the ECS service rollout. They must therefore remain backward-compatible with the currently running application during the rolling deployment. Add compatible structures first, deploy code that supports both versions, migrate data, and remove deprecated structures only in a later release.
 
 ## HTTPS and Custom Domain
 

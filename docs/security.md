@@ -10,7 +10,7 @@
 - Database credentials are generated automatically and stored in AWS Secrets Manager.
 - The ECS execution role can read only the required database secret.
 - GitHub Actions uses AWS OIDC instead of long-lived AWS access keys.
-- The GitHub deployment role is restricted to the configured repository and branch.
+- The GitHub deployment role trust policy is restricted to the configured repository and branch, while deployment permissions are scoped to the required ECR, ECS, and ECS role-passing operations.
 - ECR image tags are immutable.
 - ECS uses separate task and execution roles.
 - The ECS deployment circuit breaker is enabled.
@@ -61,7 +61,7 @@ The development environment does not yet include:
 - Dedicated production accounts or environments
 - VPC Flow Logs and CloudTrail-focused monitoring
 
-These items are documented transparently rather than represented as implemented controls.
+These items are documented transparently rather than represented as implemented controls. The current IAM configuration is deliberately scoped, but it is not described as mathematically minimal least privilege because some ECS API operations use broader resource scope.
 
 ## Public Documentation Safety
 
