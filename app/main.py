@@ -13,11 +13,6 @@ from app.routes import router as task_router
 from app.middleware import SecurityHeadersMiddleware
 
 
-app.add_middleware(SecurityHeadersMiddleware)
-
-
-
-
 settings = get_settings()
 
 
@@ -42,6 +37,7 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+app.add_middleware(SecurityHeadersMiddleware)
 
 app.include_router(task_router)
 
