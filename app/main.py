@@ -10,6 +10,12 @@ from sqlalchemy import text
 from app.config import get_settings
 from app.database import SessionLocal
 from app.routes import router as task_router
+from app.middleware import SecurityHeadersMiddleware
+
+
+app.add_middleware(SecurityHeadersMiddleware)
+
+
 
 
 settings = get_settings()
@@ -25,21 +31,32 @@ async def lifespan(application: FastAPI) -> AsyncGenerator[None, None]:
 
 
 app = FastAPI(
-    title=settings.app_name,
-    version="0.2.0",
+    title="Cloud Native Task Manager API",
+    description=(
+        "A cloud-native task management REST API deployed on AWS ECS Fargate "
+        "with RDS PostgreSQL, Terraform, GitHub Actions, and HTTPS."
+    ),
+    version="1.0.0",
+    docs_url="/docs",
+    redoc_url="/redoc",
     lifespan=lifespan,
 )
+
 
 app.include_router(task_router)
 
 
-@app.get("/")
+@app.get("/", tags=["System"])
 def root() -> dict[str, str]:
     """Return basic application information."""
 
     return {
-        "application": settings.app_name,
+        "application": "Cloud Native Task Manager",
         "environment": settings.app_env,
+        "version": "1.0.0",
+        "documentation": "/docs",
+        "health": "/health",
+        "readiness": "/ready",
     }
 
 
