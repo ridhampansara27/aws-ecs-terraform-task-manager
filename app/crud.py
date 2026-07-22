@@ -17,6 +17,7 @@ def create_task(
         title=task_data.title,
         description=task_data.description,
         status=task_data.status,
+        priority=task_data.priority,
     )
 
     database_session.add(task)

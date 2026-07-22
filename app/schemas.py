@@ -21,6 +21,12 @@ class TaskBase(BaseModel):
         max_length=50,
     )
 
+    priority: str = Field(
+        default="medium",
+        min_length=1,
+        max_length=50,
+    )
+
 
 class TaskCreate(TaskBase):
     """Data required when creating a task."""
@@ -40,6 +46,12 @@ class TaskUpdate(BaseModel):
     description: str | None = None
 
     status: str | None = Field(
+        default=None,
+        min_length=1,
+        max_length=50,
+    )
+
+    priority: str | None = Field(
         default=None,
         min_length=1,
         max_length=50,

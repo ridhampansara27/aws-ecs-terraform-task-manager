@@ -55,7 +55,7 @@ jobs:
       - name: Run database migrations
         env:
           ECS_CLUSTER: ${{ vars.ECS_CLUSTER }}
-          ECS_TASK_DEFINITION: ${{ vars.ECS_TASK_DEFINITION }}
+           ECS_TASK_DEFINITION: ${{ steps.register-task-definition.outputs.task-definition-arn }}
           ECS_SUBNETS: ${{ vars.ECS_SUBNETS }}
           ECS_SECURITY_GROUP: ${{ vars.ECS_SECURITY_GROUP }}
         run: |
@@ -115,6 +115,19 @@ jobs:
           task-definition: task-definition-clean.json
           container-name: api
           image: ${{ steps.build-image.outputs.image }}
+
+      - name: Register migration task definition
+        id: register-task-definition
+        run: |
+          TASK_DEFINITION_ARN=$(aws ecs register-task-definition \
+            --cli-input-json file://${{ steps.task-definition.outputs.task-definition }} \
+            --query 'taskDefinition.taskDefinitionArn' \
+            --output text)
+
+          echo "task-definition-arn=$TASK_DEFINITION_ARN" >> "$GITHUB_OUTPUT"
+
+          echo "Registered task definition:"
+          echo "$TASK_DEFINITION_ARN"
 
       - name: Deploy to Amazon ECS
         uses: aws-actions/amazon-ecs-deploy-task-definition@v2
