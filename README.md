@@ -741,38 +741,65 @@ resources to reduce cost.
 
 ## Screenshots
 
-Place screenshots under:
+The screenshots below are public-safe documentation assets. Sensitive values
+such as AWS account IDs, ARNs, VPC IDs, subnet IDs, private IP addresses,
+database endpoints, and secret identifiers are blurred before publishing.
 
-```text
-docs/screenshots/
-```
+### 1. Swagger API Documentation
 
-Recommended files:
+![Swagger API documentation](docs/screenshots/01-swagger-docs.png)
 
-| Filename | What to capture |
-| --- | --- |
-| `01-swagger-docs.png` | `https://api.ridham-pansara-portfolio.online/docs` showing the API endpoints |
-| `02-https-health.png` | Browser or terminal showing HTTPS `/health` success |
-| `03-task-crud-response.png` | Successful task creation response with `priority` |
-| `04-github-ci-success.png` | Successful Continuous Integration workflow |
-| `05-github-deploy-success.png` | Successful Deploy to AWS ECS workflow |
-| `06-ecs-service-running.png` | ECS service showing desired `1`, running `1` |
-| `07-alb-target-healthy.png` | ALB target group showing healthy ECS target |
-| `08-rds-private-config.png` | RDS configuration showing publicly accessible `No` |
-| `09-secrets-manager-database.png` | Secrets Manager database secret metadata, without showing secret values |
-| `10-cloudwatch-logs.png` | CloudWatch log stream with FastAPI request logs |
-| `11-cloudwatch-alarms.png` | CloudWatch alarms list |
-| `12-terraform-outputs.png` | Terraform outputs with sensitive values hidden |
-| `13-acm-certificate-issued.png` | ACM certificate status `Issued` |
-| `14-architecture-diagram.png` | Final architecture diagram |
+### 2. HTTPS Health Check
 
-Do not include screenshots that expose:
+![HTTPS health check](docs/screenshots/02-https-health.png)
 
-- AWS access keys.
-- Secret values.
-- Database passwords.
-- Full Terraform state.
-- Private environment files.
+### 3. Task CRUD Response
+
+![Task CRUD response](docs/screenshots/03-task-crud-response.png)
+
+### 4. GitHub CI Success
+
+![GitHub CI success](docs/screenshots/04-github-ci-success.png)
+
+### 5. GitHub Deploy Success
+
+![GitHub deploy success](docs/screenshots/05-github-deploy-success.png)
+
+### 6. ECS Service Running
+
+![ECS service running](docs/screenshots/06-ecs-service-running.png)
+
+### 7. ALB Target Healthy
+
+![ALB target healthy](docs/screenshots/07-alb-target-healthy.png)
+
+### 8. RDS Private Configuration
+
+![RDS private configuration](docs/screenshots/08-rds-private-config.png)
+
+### 9. Secrets Manager Database Secret
+
+![Secrets Manager database secret](docs/screenshots/09-secrets-manager-database.png)
+
+### 10. CloudWatch Logs
+
+![CloudWatch logs](docs/screenshots/10-cloudwatch-logs.png)
+
+### 11. CloudWatch Alarms
+
+![CloudWatch alarms](docs/screenshots/11-cloudwatch-alarms.png)
+
+### 12. Terraform Outputs
+
+![Terraform outputs](docs/screenshots/12-terraform-outputs.png)
+
+### 13. ACM Certificate Issued
+
+![ACM certificate issued](docs/screenshots/13-acm-certificate-issued.png)
+
+Do not publish screenshots that expose AWS access keys, secret values, database
+passwords, full Terraform state, private `.env` files, or unblurred AWS account
+IDs.
 
 ## Troubleshooting
 
