@@ -55,7 +55,7 @@ jobs:
       - name: Run database migrations
         env:
           ECS_CLUSTER: ${{ vars.ECS_CLUSTER }}
-           ECS_TASK_DEFINITION: ${{ steps.register-task-definition.outputs.task-definition-arn }}
+          ECS_TASK_DEFINITION: ${{ steps.register-task-definition.outputs.task-definition-arn }}
           ECS_SUBNETS: ${{ vars.ECS_SUBNETS }}
           ECS_SECURITY_GROUP: ${{ vars.ECS_SECURITY_GROUP }}
         run: |
