@@ -89,7 +89,7 @@ jobs:
 
           echo "Database migration completed successfully."
 
-      - name: Download current ECS task definition
+            - name: Download current ECS task definition
         run: |
           aws ecs describe-task-definition \
             --task-definition "${{ vars.ECS_TASK_DEFINITION }}" \
@@ -116,26 +116,107 @@ jobs:
           container-name: api
           image: ${{ steps.build-image.outputs.image }}
 
-      - name: Register migration task definition
+      - name: Register new ECS task definition
         id: register-task-definition
+        shell: bash
         run: |
+          TASK_DEFINITION_FILE="${{ steps.task-definition.outputs.task-definition }}"
+
+          if [ -z "$TASK_DEFINITION_FILE" ]; then
+            echo "Rendered task definition file path is empty."
+            exit 1
+          fi
+
+          if [ ! -f "$TASK_DEFINITION_FILE" ]; then
+            echo "Rendered task definition file does not exist: $TASK_DEFINITION_FILE"
+            exit 1
+          fi
+
           TASK_DEFINITION_ARN=$(aws ecs register-task-definition \
-            --cli-input-json file://${{ steps.task-definition.outputs.task-definition }} \
-            --query 'taskDefinition.taskDefinitionArn' \
+            --cli-input-json "file://$TASK_DEFINITION_FILE" \
+            --query "taskDefinition.taskDefinitionArn" \
             --output text)
 
+          if [ -z "$TASK_DEFINITION_ARN" ] || [ "$TASK_DEFINITION_ARN" = "None" ]; then
+            echo "Failed to register ECS task definition."
+            exit 1
+          fi
+
+          echo "Registered task definition: $TASK_DEFINITION_ARN"
           echo "task-definition-arn=$TASK_DEFINITION_ARN" >> "$GITHUB_OUTPUT"
 
-          echo "Registered task definition:"
-          echo "$TASK_DEFINITION_ARN"
+      - name: Run database migrations
+        shell: bash
+        env:
+          ECS_CLUSTER: ${{ vars.ECS_CLUSTER }}
+          ECS_TASK_DEFINITION: ${{ steps.register-task-definition.outputs.task-definition-arn }}
+          ECS_SUBNETS: ${{ vars.ECS_SUBNETS }}
+          ECS_SECURITY_GROUP: ${{ vars.ECS_SECURITY_GROUP }}
+        run: |
+          if [ -z "$ECS_TASK_DEFINITION" ]; then
+            echo "ECS task definition ARN is empty."
+            exit 1
+          fi
 
-      - name: Deploy to Amazon ECS
-        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
-        with:
-          task-definition: ${{ steps.task-definition.outputs.task-definition }}
-          service: ${{ vars.ECS_SERVICE }}
-          cluster: ${{ vars.ECS_CLUSTER }}
-          wait-for-service-stability: true
+          MIGRATION_TASK_ARN=$(aws ecs run-task \
+            --cluster "$ECS_CLUSTER" \
+            --task-definition "$ECS_TASK_DEFINITION" \
+            --launch-type FARGATE \
+            --network-configuration "awsvpcConfiguration={subnets=[$ECS_SUBNETS],securityGroups=[$ECS_SECURITY_GROUP],assignPublicIp=ENABLED}" \
+            --overrides '{"containerOverrides":[{"name":"api","command":["python","-m","alembic","upgrade","head"]}]}' \
+            --query "tasks[0].taskArn" \
+            --output text)
+
+          if [ -z "$MIGRATION_TASK_ARN" ] || [ "$MIGRATION_TASK_ARN" = "None" ]; then
+            echo "ECS migration task was not started."
+            exit 1
+          fi
+
+          echo "Migration task ARN: $MIGRATION_TASK_ARN"
+
+          aws ecs wait tasks-stopped \
+            --cluster "$ECS_CLUSTER" \
+            --tasks "$MIGRATION_TASK_ARN"
+
+          EXIT_CODE=$(aws ecs describe-tasks \
+            --cluster "$ECS_CLUSTER" \
+            --tasks "$MIGRATION_TASK_ARN" \
+            --query "tasks[0].containers[0].exitCode" \
+            --output text)
+
+          STOPPED_REASON=$(aws ecs describe-tasks \
+            --cluster "$ECS_CLUSTER" \
+            --tasks "$MIGRATION_TASK_ARN" \
+            --query "tasks[0].stoppedReason" \
+            --output text)
+
+          echo "Migration exit code: $EXIT_CODE"
+          echo "Migration stopped reason: $STOPPED_REASON"
+
+          if [ "$EXIT_CODE" != "0" ]; then
+            echo "Database migration failed."
+            exit 1
+          fi
+
+          echo "Database migration completed successfully."
+
+      - name: Deploy registered task definition to ECS
+        shell: bash
+        env:
+          ECS_CLUSTER: ${{ vars.ECS_CLUSTER }}
+          ECS_SERVICE: ${{ vars.ECS_SERVICE }}
+          ECS_TASK_DEFINITION: ${{ steps.register-task-definition.outputs.task-definition-arn }}
+        run: |
+          aws ecs update-service \
+            --cluster "$ECS_CLUSTER" \
+            --service "$ECS_SERVICE" \
+            --task-definition "$ECS_TASK_DEFINITION"
+
+          aws ecs wait services-stable \
+            --cluster "$ECS_CLUSTER" \
+            --services "$ECS_SERVICE"
+
+          echo "ECS deployment completed successfully."
 
       - name: Smoke test application
         env:
