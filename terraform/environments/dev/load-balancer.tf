@@ -11,4 +11,6 @@ module "load_balancer" {
   alb_security_group_id = module.security.alb_security_group_id
 
   app_port = 8000
+
+  certificate_arn = aws_acm_certificate_validation.api.certificate_arn
 }

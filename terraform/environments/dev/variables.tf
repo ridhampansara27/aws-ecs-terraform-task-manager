@@ -85,3 +85,10 @@ variable "github_repository_id" {
   type        = string
   default     = "1304106902"
 }
+
+
+variable "api_domain_name" {
+  description = "Public domain name used for the Task Manager API."
+  type        = string
+  default     = "api.ridham-pansara-portfolio.online"
+}

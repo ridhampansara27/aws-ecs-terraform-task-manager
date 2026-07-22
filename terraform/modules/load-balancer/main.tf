@@ -63,8 +63,31 @@ resource "aws_lb_listener" "http" {
   protocol = "HTTP"
 
   default_action {
-    type = "forward"
+    type = "redirect"
 
+    redirect {
+      protocol    = "HTTPS"
+      port        = "443"
+      status_code = "HTTP_301"
+    }
+  }
+}
+
+
+
+
+# Create a listener for the ALB to forward traffic to the target group
+resource "aws_lb_listener" "https" {
+  load_balancer_arn = aws_lb.main.arn
+
+  port     = 443
+  protocol = "HTTPS"
+
+  certificate_arn = var.certificate_arn
+  ssl_policy      = "ELBSecurityPolicy-TLS13-1-2-2021-06"
+
+  default_action {
+    type             = "forward"
     target_group_arn = aws_lb_target_group.app.arn
   }
 }

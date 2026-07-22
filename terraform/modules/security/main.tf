@@ -90,3 +90,19 @@ resource "aws_vpc_security_group_ingress_rule" "rds_from_ecs" {
   ip_protocol = "tcp"
   to_port     = var.db_port
 }
+
+
+
+
+
+# Allow HTTPS traffic from the internet to the ALB security group
+resource "aws_vpc_security_group_ingress_rule" "alb_https" {
+  security_group_id = aws_security_group.alb.id
+
+  description = "Allow HTTPS traffic from the internet."
+
+  from_port   = 443
+  to_port     = 443
+  ip_protocol = "tcp"
+  cidr_ipv4   = "0.0.0.0/0"
+}

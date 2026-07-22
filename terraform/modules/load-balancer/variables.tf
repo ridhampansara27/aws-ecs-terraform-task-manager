@@ -28,3 +28,9 @@ variable "app_port" {
   type        = number
   default     = 8000
 }
+
+
+variable "certificate_arn" {
+  description = "ACM certificate ARN used by the HTTPS listener."
+  type        = string
+}
