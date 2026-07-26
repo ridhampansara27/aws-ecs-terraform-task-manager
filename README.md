@@ -62,7 +62,7 @@ My work included:
 - Replaced persistent AWS credentials in GitHub with short-lived OIDC sessions.
 - Built a two-job CI workflow that runs Ruff linting, formatting checks, Pytest, Docker image builds, and image validation.
 - Automated image publishing, Alembic migrations, ECS rollout, stability checks, and an HTTPS smoke test.
-- Provisioned networking across **2 Availability Zones**.
+- Provisioned networking across **1 Availability Zones**.
 - Configured **4 CloudWatch alarms** for application and load-balancer health.
 - Reduced idle compute cost with PowerShell start/stop automation.
 
