@@ -1,4 +1,4 @@
-﻿# Cloud-Native Task Manager on AWS
+# Cloud-Native Task Manager on AWS
 
 [![Continuous Integration](https://github.com/ridhampansara27/aws-ecs-terraform-task-manager/actions/workflows/ci.yml/badge.svg)](https://github.com/ridhampansara27/aws-ecs-terraform-task-manager/actions/workflows/ci.yml)
 [![Deploy to AWS ECS](https://github.com/ridhampansara27/aws-ecs-terraform-task-manager/actions/workflows/deploy.yml/badge.svg)](https://github.com/ridhampansara27/aws-ecs-terraform-task-manager/actions/workflows/deploy.yml)
@@ -68,51 +68,11 @@ My work included:
 
 ## Architecture
 
-```mermaid
-flowchart TD
-    client["User / API Client"] --> dns["Custom API Domain"]
-    dns --> alb["Application Load Balancer<br/>HTTPS :443"]
-    alb --> ecs["ECS Fargate Service<br/>FastAPI container"]
-    ecs --> secret["AWS Secrets Manager<br/>DATABASE_URL"]
-    ecs --> rds["Amazon RDS PostgreSQL<br/>Private DB subnets"]
-    ecs --> logs["CloudWatch Logs"]
-
-    github["GitHub Actions"] --> oidc["AWS IAM OIDC Role"]
-    oidc --> ecr["Amazon ECR"]
-    oidc --> ecs
-    github --> migration["One-off ECS migration task"]
-    migration --> secret
-    migration --> rds
-
-    terraform["Terraform"] --> network["VPC, subnets, routes"]
-    terraform --> security["Security groups and IAM"]
-    terraform --> alb
-    terraform --> ecs
-    terraform --> rds
-    terraform --> acm["AWS Certificate Manager"]
-    terraform --> alarms["CloudWatch Alarms"]
-    terraform --> state["Encrypted S3 remote state"]
-```
+[![AWS architecture overview](docs/diagrams/architecture-overview.png)](docs/diagrams/architecture-overview.png)
 
 ### Network and Security Flow
 
-```mermaid
-flowchart LR
-    internet["Internet"] -->|HTTP 80 / HTTPS 443| albsg["ALB Security Group"]
-    albsg -->|TCP 8000| ecssg["ECS Security Group"]
-    ecssg -->|PostgreSQL 5432| rdssg["RDS Security Group"]
-    rdssg --> database["RDS PostgreSQL"]
-
-    subgraph public["Public Subnets"]
-        albsg
-        ecssg
-    end
-
-    subgraph private["Private Database Subnets"]
-        rdssg
-        database
-    end
-```
+[![Network and security flow](docs/diagrams/network-security-flow.png)](docs/diagrams/network-security-flow.png)
 
 ## Project Evidence
 

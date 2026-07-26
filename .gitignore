@@ -36,3 +36,12 @@ crash.log
 
 # Keep provider dependency lock file
 !.terraform.lock.hcl
+
+
+# Terraform plan files
+*.tfplan
+tfplan-*
+
+# Local Terraform operation records
+terraform-outputs-before-destroy.txt
+terraform-resources-before-destroy.txt
